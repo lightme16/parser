@@ -73,7 +73,7 @@ class Parser:
         document = {key: [] for key in self.model.keys() if key not in self.unique_keys}
         pop_keys = [] # this must be remade some better way
         for model_key, model_parser in self.model.items():
-            for tokens_key, tokens_value in tokens.items(): # don't know how to be with embedded cycle but I hope model isn't long
+            for tokens_key, tokens_value in tokens.items(): # don't know how to be with embedded cycle but I hope the model isn't long
                 if model_parser(str(tokens_key), tokens_value):
                     if model_key in self.unique_keys:
                         document[model_key] = tokens_value
@@ -144,11 +144,13 @@ class Parser:
     def parse_age_group(self, str):
         pass
 
-
-if __name__ == '__main__':
-
+def main():
     client = MongoClient()
     db = client.parser_db
     collection = db.parsed
     Parser('products.xml', collection)
     Parser('products.txt', collection)
+
+
+if __name__ == '__main__':
+    main()
