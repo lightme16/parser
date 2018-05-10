@@ -38,40 +38,42 @@ class Parser:
             "gender_group": self.parse_gender_group,
         #     "age_group"
         }
+        self._main(filename)
 
+    def _main(self, filename):
         if re.match(r'.+\.xml', filename):
-            self.readlines_xml(filename)
+            self._readlines_xml(filename)
         if re.match(r'.+\.txt', filename):
-            self.readlines_csv(filename)
+            self._readlines_csv(filename)
 
-    def readlines_csv(self, filename):
+    def _readlines_csv(self, filename):
         with open(filename, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=separator_csv)
             for row in reader:
                 tokens = {i: row[i] for i in range(len(row)) if row[i] != ''}
-                self.parser(tokens)
+                self._parser(tokens)
 
 
 
-    def readlines_xml(self, filename):
+    def _readlines_xml(self, filename):
         for event, elem in etree.iterparse('products.xml', events=('start', 'end')):
             if event == 'start' and elem.tag == separator_xml:
                 tokens = {}
-                self.lexer_xml(elem, tokens)
-                self.parser(tokens)
+                self._lexer_xml(elem, tokens)
+                self._parser(tokens)
 
-    def lexer_xml(self, element, tokens):
+    def _lexer_xml(self, element, tokens):
         text = element.text
         if text and text != '\n':
             tokens[element.tag] = text
         for i in element:
-            self.lexer_xml(i, tokens)
+            self._lexer_xml(i, tokens)
 
-    def parser(self, tokens):
+    def _parser(self, tokens):
         document = {key: [] for key in self.model.keys() if key not in self.unique_keys}
         pop_keys = [] # this must be remade some better way
         for model_key, model_parser in self.model.items():
-            for tokens_key, tokens_value in tokens.items():
+            for tokens_key, tokens_value in tokens.items(): # don't know how to be with embedded cycle but I hope model isn't long
                 if model_parser(str(tokens_key), tokens_value):
                     if model_key in self.unique_keys:
                         document[model_key] = tokens_value
